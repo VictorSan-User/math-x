@@ -101,11 +101,21 @@
 
         </div>
 
+        @if($errors->any())
+            <div class="container">
+                <div class="row">
+                    <div class="alert alert-danger text-center mt-3">
+                        Por favor, selecione ao menos uma operação. As parecelas devem ser numeros entre 0 e 999. O número de exercícios deve variar entre 5 e 50.
+                    </div>
+                </div>
+            </div>
+        @endif
+
     </form>
 
     <!-- footer -->
     <footer class="text-center mt-5">
-        <p class="text-secondary">MathX &copy; <span class="text-info">[ANO]</span></p>
+        <p class="text-secondary">MathX &copy; <span class="text-info">{{ date('Y') }}</span></p>
     </footer>
 
     <!-- bootstrap -->
