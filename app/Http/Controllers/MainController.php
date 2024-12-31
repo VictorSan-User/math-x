@@ -12,7 +12,7 @@ class MainController extends Controller
         return view('home');
     }
 
-    public function generateExercises(Request $request): void
+    public function generateExercises(Request $request): View
     {
         $request->validate([
             // sem espaços  
@@ -90,14 +90,14 @@ class MainController extends Controller
                 $solution = round($solution, 2);
             }
 
-            $exercices[] = [
+            $exercises[] = [
                 'operation' => $operation,
                 'exercise_number' => $index,
                 'exercise' => $exercise,
                 'solution' => "$exercise $solution"
             ];
         }
-        dd($exercices);
+        return view('operations', ['exercises' => $exercises]);
     }
 
     public function printExercises()
