@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Cache\RedisTagSet;
 use Illuminate\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use PhpParser\Node\Stmt\Echo_;
 
 class MainController extends Controller
 {
@@ -61,12 +63,57 @@ class MainController extends Controller
 
     public function printExercises()
     {
-        echo "Imprimir exercícios no navegador";
+        // VER SE EXISTEM NA SESSAO
+        if(!session()->has('exercises')){
+            return redirect()->route('home');
+        }
+        $exercises = session('exercises');
+
+        echo '<pre>';
+        echo '<h1>Exercícios de Matemática (' . env('APP_NAME') . ')</h1>';
+        echo '<hr>';
+
+        foreach($exercises as $exercise){
+            echo '<h2><small>' . str_pad($exercise['exercise_number'], 2, '0',STR_PAD_LEFT) . '>> </small>' . $exercise['exercise'] . '</h2>' ;
+        }
+
+        //solucoes
+
+        echo '<hr>';
+        echo '<small>Soluções</small><br><br>';
+        foreach($exercises as $exercise){
+            echo '<small>' . str_pad($exercise['exercise_number'], 2, '0',STR_PAD_LEFT) . '>>' . $exercise['solution'] . '</small><br>' ;
+        }
+
     }
 
     public function exportExercises()
     {
-        echo "Exportar arquivos para um txt";
+        // VER SE EXISTEM NA SESSAO
+        if(!session()->has('exercises')){
+            return redirect()->route('home');
+        }
+        $exercises = session('exercises');
+
+        //criar o ficheiro para baixar em txt com os exercícios
+        $filename = 'exercises_'. env('APP_NAME') . '_' . date('YmdHis') . '.txt';
+
+        $content = '';
+        $content = 'Exercícios de Matemática (' . env('APP_NAME') . ')' . "\n";
+        foreach($exercises as $exercise){
+            $content .= $exercise['exercise_number'] . '->' . $exercise['exercise']. "\n";
+        }
+
+        // solucao
+        $content = "\n";
+        $content = "Soluções\n" . str_repeat('-', 20). "\n";
+        foreach($exercises as $exercise){
+            $content .= $exercise['exercise_number']. '>' . $exercise['solution']. "\n";
+        }
+
+        return response($content)
+                ->header('Content_Type', 'text/plain')
+                ->header('Content-Disposition', 'attachment; filename="'. $filename. '"');
     }
 
     private function generateExercise($index, $operations, $min, $max): array
