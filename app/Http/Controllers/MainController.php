@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\View\View;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 
 class MainController extends Controller
 {
@@ -26,17 +27,17 @@ class MainController extends Controller
         ]);
         //buscar operações selecionadas
         $operations = [];
-        if($request->check_sum){
-            $operations [] = 'sum';
+        if ($request->check_sum) {
+            $operations[] = 'sum';
         }
-        if($request->check_subtraction){
-            $operations [] = 'subtraction';
+        if ($request->check_subtraction) {
+            $operations[] = 'subtraction';
         }
-        if($request->check_multiplication){
-            $operations [] = 'multiplication';
+        if ($request->check_multiplication) {
+            $operations[] = 'multiplication';
         }
-        if($request->check_division){
-            $operations [] = 'division';
+        if ($request->check_division) {
+            $operations[] = 'division';
         }
 
         $min = $request->number_one;
@@ -49,54 +50,12 @@ class MainController extends Controller
         $exercices = [];
         //conjunto de ciclos = numero de exercicios
         for ($index = 1; $index <= $numberExercises; $index++) {
-
-            // definimos o tipo de operação conforme é preenchido a coleção acima
-            $operation = $operations[array_rand($operations)];
-            // numero 1 é randomico entre o min e max informados no formulario
-            $number1 = rand($min, $max);
-            // numero 2 a mesma coisa
-            $number2 = rand($min, $max);
-
-            $exercise = '';
-            $solution = '';
-
-            switch ($operation) {
-                case 'sum':
-                    $exercise = "$number1 + $number2 = ";
-                    $solution = $number1 + $number2;
-                    break;
-
-                case 'subtraction':
-                    $exercise = "$number1 - $number2 =";
-                    $solution = $number1 - $number2;
-                    break;
-                case 'multiplication':
-                    $exercise = "$number1 x $number2 =";
-                    $solution = $number1 * $number2;
-                    break;
-                case 'division':
-
-                    //evitar divisao por 0
-                    if($number2==0){
-                        $number2 = 1;
-                    }
-
-                    $exercise = "$number1 : $number2 =";
-                    $solution = $number1 / $number2;
-                    break;
-            }
-            //se a solucao for float, arredondar pra 2 casas decimais
-            if(is_float($solution)){
-                $solution = round($solution, 2);
-            }
-
-            $exercises[] = [
-                'operation' => $operation,
-                'exercise_number' => $index,
-                'exercise' => $exercise,
-                'solution' => "$exercise $solution"
-            ];
+            $exercises[] = $this->generateExercise($index, $operations, $min, $max);
         }
+        //colocar os exercicios na sessao
+        session(['exercises' => $exercises]);
+
+
         return view('operations', ['exercises' => $exercises]);
     }
 
@@ -108,5 +67,55 @@ class MainController extends Controller
     public function exportExercises()
     {
         echo "Exportar arquivos para um txt";
+    }
+
+    private function generateExercise($index, $operations, $min, $max): array
+    {
+        // definimos o tipo de operação conforme é preenchido a coleção acima
+        $operation = $operations[array_rand($operations)];
+        // numero 1 é randomico entre o min e max informados no formulario
+        $number1 = rand($min, $max);
+        // numero 2 a mesma coisa
+        $number2 = rand($min, $max);
+
+        $exercise = '';
+        $solution = '';
+
+        switch ($operation) {
+            case 'sum':
+                $exercise = "$number1 + $number2 = ";
+                $solution = $number1 + $number2;
+                break;
+
+            case 'subtraction':
+                $exercise = "$number1 - $number2 =";
+                $solution = $number1 - $number2;
+                break;
+            case 'multiplication':
+                $exercise = "$number1 x $number2 =";
+                $solution = $number1 * $number2;
+                break;
+            case 'division':
+
+                //evitar divisao por 0
+                if ($number2 == 0) {
+                    $number2 = 1;
+                }
+
+                $exercise = "$number1 : $number2 =";
+                $solution = $number1 / $number2;
+                break;
+        }
+        //se a solucao for float, arredondar pra 2 casas decimais
+        if (is_float($solution)) {
+            $solution = round($solution, 2);
+        }
+
+        return [
+            'operation' => $operation,
+            'exercise_number' => $index,
+            'exercise' => $exercise,
+            'solution' => "$exercise $solution"
+        ];
     }
 }
